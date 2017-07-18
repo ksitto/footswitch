@@ -23,8 +23,13 @@ THE SOFTWARE.
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
 #include "common.h"
+
+#ifdef _WIN32
+#include <string>
+#else
+#include <strings.h>
+#endif
 
 typedef struct keymap_entry
 {

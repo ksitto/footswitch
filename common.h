@@ -52,3 +52,8 @@ Bool encode_key(const char *key, unsigned char *b);
 const char* decode_byte(unsigned char b);
 
 #endif
+
+#ifdef _WIN32 // Windows
+#define usleep _sleep
+#define strcasecmp _stricmp
+#endif

@@ -24,10 +24,18 @@ THE SOFTWARE.
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <unistd.h>
 #include <hidapi.h>
 #include "common.h"
 #include "debug.h"
+
+#ifdef _WIN32
+#include "getopt.h"
+#else
+#include <unistd.h>
+#endif
+
+#define WRITE_PEDALS_SLEEP 10*1000
+#define WRITE_MESSAGE_SLEEP 3*1000
 
 hid_device *dev = NULL;
 
@@ -130,11 +138,19 @@ void deinit() {
 }
 
 void usb_write(unsigned char data[8]) {
-    int r = hid_write(dev, data, 8);
+#ifdef _WIN32
+	unsigned char win_data[9];
+	win_data[0] = 0;
+	for (int i = 0; i < 8; i++) win_data[i + 1] = data[i];
+	int r = hid_write(dev, win_data, 9);
+#else 
+	int r = hid_write(dev, data, 8);
+#endif
+	
     if (r < 0) {
         fatal("error writing data (%ls)", hid_error(dev));
     }
-    usleep(30 * 1000);
+	usleep(WRITE_MESSAGE_SLEEP);
 }
 
 void print_mouse(unsigned char data[]) {
@@ -460,7 +476,7 @@ void write_pedals() {
     }
     */
     usb_write(pd.start);
-    usleep(1000*1000);
+    usleep(WRITE_PEDALS_SLEEP);
     write_pedal(&pd.pedals[0]);
     write_pedal(&pd.pedals[1]);
     write_pedal(&pd.pedals[2]);
